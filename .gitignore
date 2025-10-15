@@ -1,0 +1,13 @@
+# Firebase Configuration (Keep your credentials private!)
+# You should NOT commit this file with real credentials
+# Instead, share firebase-config.example.js
+firebase-config.js
+
+# Optional: Ignore OS and editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.vscode/
+.idea/

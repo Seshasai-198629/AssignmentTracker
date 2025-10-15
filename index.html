@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assignment Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1>College Tracker</h1>
+            <div class="nav-links">
+                <a href="index.html" class="active">Assignments</a>
+                <a href="assessments.html">Assessments</a>
+                <button class="btn btn-logout" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header-section">
+            <h2>Assignments</h2>
+            <button class="btn btn-primary" onclick="toggleModal('classModal')">+ Add Class</button>
+            <button class="btn btn-primary" onclick="toggleModal('assignmentModal')">+ Add Assignment</button>
+        </div>
+
+        <div class="legend">
+            <span class="legend-item"><span class="status-badge completed"></span> Completed</span>
+            <span class="legend-item"><span class="status-badge in-progress"></span> In Progress</span>
+            <span class="legend-item"><span class="status-badge not-started"></span> Not Started</span>
+        </div>
+
+        <div id="assignmentsContainer" class="assignments-container">
+            <!-- Assignments will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <!-- Add Class Modal -->
+    <div id="classModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="toggleModal('classModal')">&times;</span>
+            <h3>Add New Class</h3>
+            <form id="classForm">
+                <div class="form-group">
+                    <label for="className">Class Name:</label>
+                    <input type="text" id="className" required>
+                </div>
+                <div class="form-group">
+                    <label for="classStart">Start Date:</label>
+                    <input type="date" id="classStart" required>
+                </div>
+                <div class="form-group">
+                    <label for="classEnd">End Date:</label>
+                    <input type="date" id="classEnd" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Class</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Assignment Modal -->
+    <div id="assignmentModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="toggleModal('assignmentModal')">&times;</span>
+            <h3>Add New Assignment</h3>
+            <form id="assignmentForm">
+                <div class="form-group">
+                    <label for="assignmentClass">Class:</label>
+                    <select id="assignmentClass" required>
+                        <option value="">Select a class</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="assignmentName">Assignment Name:</label>
+                    <input type="text" id="assignmentName" required>
+                </div>
+                <div class="form-group">
+                    <label for="assignmentType">Type:</label>
+                    <select id="assignmentType" required>
+                        <option value="">Select type</option>
+                        <option value="Homework">Homework</option>
+                        <option value="Project">Project</option>
+                        <option value="Essay">Essay</option>
+                        <option value="Lab">Lab</option>
+                        <option value="Reading">Reading</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="assignmentDue">Due Date:</label>
+                    <input type="date" id="assignmentDue" required>
+                </div>
+                <div class="form-group">
+                    <label for="assignmentStatus">Status:</label>
+                    <select id="assignmentStatus" required>
+                        <option value="not-started">Not Started</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Assignment</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    
+    <script src="firebase-config.js"></script>
+    <script src="auth.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
