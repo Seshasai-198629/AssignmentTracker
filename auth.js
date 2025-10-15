@@ -50,9 +50,9 @@ if (window.location.pathname.split('/').pop() === 'index.html' || window.locatio
                 // User is already logged in, redirect to main page
                 window.location.href = 'assignments.html';
             } else {
-                // Show login/signup forms
-                document.getElementById('setupSection').style.display = 'block';
+                // Show only login form by default
                 document.getElementById('loginSection').style.display = 'block';
+                document.getElementById('setupSection').style.display = 'none';
             }
         });
         

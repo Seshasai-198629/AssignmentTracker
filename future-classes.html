@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Future Classes - College Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1>College Tracker</h1>
+            <div class="nav-links">
+                <a href="assignments.html">Assignments</a>
+                <a href="assessments.html">Assessments</a>
+                <a href="classes.html">Classes</a>
+                <a href="future-classes.html" class="active">Future</a>
+                <a href="grades.html">Grades</a>
+                <button class="btn btn-logout" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header-section">
+            <h2>Future Classes</h2>
+            <button class="btn btn-primary" onclick="toggleModal('futureClassModal')">+ Add Future Class</button>
+        </div>
+
+        <div class="info-box">
+            <strong>📅 Future Classes:</strong> Plan ahead! Add classes you're considering for upcoming semesters.
+        </div>
+
+        <div id="futureClassesContainer" class="classes-grid">
+            <!-- Future classes will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <!-- Add Future Class Modal -->
+    <div id="futureClassModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="toggleModal('futureClassModal')">&times;</span>
+            <h3>Add Future Class</h3>
+            <form id="futureClassForm">
+                <div class="form-group">
+                    <label for="futureClassName">Class Name:</label>
+                    <input type="text" id="futureClassName" required placeholder="e.g., Data Structures">
+                </div>
+                <div class="form-group">
+                    <label for="futureClassCode">Class Code (Optional):</label>
+                    <input type="text" id="futureClassCode" placeholder="e.g., CS201">
+                </div>
+                <div class="form-group">
+                    <label for="futureStartDate">Start Date:</label>
+                    <input type="date" id="futureStartDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="futureEndDate">End Date:</label>
+                    <input type="date" id="futureEndDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="futureSemester">Planned Semester:</label>
+                    <input type="text" id="futureSemester" placeholder="e.g., Fall 2026">
+                </div>
+                <div class="form-group">
+                    <label for="futureNotes">Notes (Optional):</label>
+                    <textarea id="futureNotes" rows="3" placeholder="Prerequisites, why you want to take it, etc."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Class</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    
+    <script src="firebase-config.js"></script>
+    <script src="auth.js"></script>
+    <script src="future-classes-script.js"></script>
+</body>
+</html>

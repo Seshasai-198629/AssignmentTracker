@@ -9,10 +9,13 @@
 <body>
     <nav class="navbar">
         <div class="nav-container">
-            <h1>College Tracker</h1>
+            <h1>Classes Tracker</h1>
             <div class="nav-links">
                 <a href="assignments.html">Assignments</a>
                 <a href="assessments.html" class="active">Assessments</a>
+                <a href="classes.html">Classes</a>
+                <a href="future-classes.html">Future</a>
+                <a href="grades.html">Grades</a>
                 <button class="btn btn-logout" onclick="logout()">Logout</button>
             </div>
         </div>
@@ -21,8 +24,13 @@
     <div class="container">
         <div class="header-section">
             <h2>Assessments</h2>
-            <button class="btn btn-primary" onclick="toggleModal('classModal')">+ Add Class</button>
-            <button class="btn btn-primary" onclick="toggleModal('assessmentModal')">+ Add Assessment</button>
+            <div class="header-controls">
+                <select id="classFilter" class="filter-dropdown" onchange="filterAssessments()">
+                    <option value="">All Classes</option>
+                </select>
+                <button class="btn btn-primary" onclick="toggleModal('classModal')">+ Add Class</button>
+                <button class="btn btn-primary" onclick="toggleModal('assessmentModal')">+ Add Assessment</button>
+            </div>
         </div>
 
         <div class="legend">

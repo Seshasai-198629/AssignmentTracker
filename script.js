@@ -33,7 +33,11 @@ function loadData() {
     userDataRef.child('classes').on('value', (snapshot) => {
         classes = [];
         snapshot.forEach((childSnapshot) => {
-            classes.push(childSnapshot.val());
+            const classData = childSnapshot.val();
+            // Load only current classes for assignments/assessments
+            if (!classData.type || classData.type === 'current') {
+                classes.push(classData);
+            }
         });
         populateClassDropdowns();
         
@@ -86,6 +90,11 @@ function saveAssignment(assignmentData) {
 function saveAssessment(assessmentData) {
     if (!userDataRef) return;
     return userDataRef.child('assessments').child(assessmentData.id.toString()).set(assessmentData);
+}
+
+function saveGrade(gradeData) {
+    if (!userDataRef) return;
+    return userDataRef.child('grades').child(gradeData.id.toString()).set(gradeData);
 }
 
 function deleteClassFromDB(classId) {
@@ -143,9 +152,21 @@ function setupFormHandlers() {
 function handleClassSubmit(e) {
     e.preventDefault();
     
+    const className = document.getElementById('className').value.trim();
+    
+    // Check if class with same name already exists (case-insensitive)
+    const duplicateClass = classes.find(cls => 
+        cls.name.toLowerCase() === className.toLowerCase()
+    );
+    
+    if (duplicateClass) {
+        alert(`A class named "${className}" already exists! Please use a different name.`);
+        return;
+    }
+    
     const newClass = {
         id: Date.now(),
-        name: document.getElementById('className').value,
+        name: className,
         startDate: document.getElementById('classStart').value,
         endDate: document.getElementById('classEnd').value
     };
@@ -176,6 +197,26 @@ function handleAssignmentSubmit(e) {
     
     saveAssignment(newAssignment).then(() => {
         console.log('Assignment saved successfully');
+        
+        // Automatically create a grade entry for this assignment
+        const newGrade = {
+            id: Date.now() + 1, // Slightly different ID
+            classId: newAssignment.classId,
+            taskName: newAssignment.name,
+            taskType: newAssignment.type,
+            pointsEarned: 0,
+            pointsTotal: 0,
+            weight: null,
+            date: newAssignment.dueDate,
+            linkedAssignmentId: newAssignment.id
+        };
+        
+        saveGrade(newGrade).then(() => {
+            console.log('Grade entry created automatically');
+        }).catch((error) => {
+            console.error('Error creating grade entry:', error);
+        });
+        
         e.target.reset();
         toggleModal('assignmentModal');
     }).catch((error) => {
@@ -199,6 +240,26 @@ function handleAssessmentSubmit(e) {
     
     saveAssessment(newAssessment).then(() => {
         console.log('Assessment saved successfully');
+        
+        // Automatically create a grade entry for this assessment
+        const newGrade = {
+            id: Date.now() + 1, // Slightly different ID
+            classId: newAssessment.classId,
+            taskName: newAssessment.name,
+            taskType: 'Exam', // Assessments are typically exams
+            pointsEarned: 0,
+            pointsTotal: 0,
+            weight: null,
+            date: newAssessment.date,
+            linkedAssessmentId: newAssessment.id
+        };
+        
+        saveGrade(newGrade).then(() => {
+            console.log('Grade entry created automatically');
+        }).catch((error) => {
+            console.error('Error creating grade entry:', error);
+        });
+        
         e.target.reset();
         toggleModal('assessmentModal');
     }).catch((error) => {
@@ -211,7 +272,9 @@ function handleAssessmentSubmit(e) {
 function populateClassDropdowns() {
     const assignmentClassSelect = document.getElementById('assignmentClass');
     const assessmentClassSelect = document.getElementById('assessmentClass');
+    const assignmentFilter = document.getElementById('classFilter');
     
+    // Populate assignment class select
     if (assignmentClassSelect) {
         assignmentClassSelect.innerHTML = '<option value="">Select a class</option>';
         classes.forEach(cls => {
@@ -222,6 +285,7 @@ function populateClassDropdowns() {
         });
     }
     
+    // Populate assessment class select
     if (assessmentClassSelect) {
         assessmentClassSelect.innerHTML = '<option value="">Select a class</option>';
         classes.forEach(cls => {
@@ -231,6 +295,29 @@ function populateClassDropdowns() {
             assessmentClassSelect.appendChild(option);
         });
     }
+    
+    // Populate filter dropdown
+    if (assignmentFilter) {
+        const currentValue = assignmentFilter.value;
+        assignmentFilter.innerHTML = '<option value="">All Classes</option>';
+        classes.forEach(cls => {
+            const option = document.createElement('option');
+            option.value = cls.id;
+            option.textContent = cls.name;
+            assignmentFilter.appendChild(option);
+        });
+        assignmentFilter.value = currentValue;
+    }
+}
+
+// Filter assignments by class
+function filterAssignments() {
+    renderAssignments();
+}
+
+// Filter assessments by class
+function filterAssessments() {
+    renderAssessments();
 }
 
 // Get Week Number
@@ -266,11 +353,21 @@ function renderAssignments() {
     const container = document.getElementById('assignmentsContainer');
     if (!container) return;
     
-    if (assignments.length === 0) {
+    // Get filter value
+    const filterSelect = document.getElementById('classFilter');
+    const filterClassId = filterSelect ? filterSelect.value : '';
+    
+    // Filter assignments
+    let filteredAssignments = assignments;
+    if (filterClassId) {
+        filteredAssignments = assignments.filter(a => a.classId == filterClassId);
+    }
+    
+    if (filteredAssignments.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
                 <div class="empty-state-icon">📚</div>
-                <div class="empty-state-text">No assignments yet. Add your first assignment to get started!</div>
+                <div class="empty-state-text">${filterClassId ? 'No assignments for this class.' : 'No assignments yet. Add your first assignment to get started!'}</div>
             </div>
         `;
         return;
@@ -278,7 +375,7 @@ function renderAssignments() {
     
     // Group assignments by week
     const assignmentsByWeek = {};
-    assignments.forEach(assignment => {
+    filteredAssignments.forEach(assignment => {
         const week = getWeekNumber(assignment.dueDate);
         if (!assignmentsByWeek[week]) {
             assignmentsByWeek[week] = [];
@@ -286,8 +383,30 @@ function renderAssignments() {
         assignmentsByWeek[week].push(assignment);
     });
     
-    // Sort weeks and assignments
-    const sortedWeeks = Object.keys(assignmentsByWeek).sort();
+    // Separate completed weeks from incomplete weeks
+    const incompleteWeeks = [];
+    const completedWeeks = [];
+    
+    Object.keys(assignmentsByWeek).forEach(week => {
+        const weekAssignments = assignmentsByWeek[week];
+        const allCompleted = weekAssignments.every(assignment => assignment.status === 'completed');
+        
+        if (allCompleted) {
+            completedWeeks.push(week);
+        } else {
+            incompleteWeeks.push(week);
+        }
+    });
+    
+    // Sort incomplete weeks chronologically (earliest first - current work on top)
+    incompleteWeeks.sort();
+    
+    // Sort completed weeks chronologically (oldest first - will be at bottom)
+    completedWeeks.sort();
+    
+    // Combine: incomplete weeks first, then completed weeks
+    const sortedWeeks = [...incompleteWeeks, ...completedWeeks];
+    
     container.innerHTML = '';
     
     sortedWeeks.forEach(week => {
@@ -295,11 +414,16 @@ function renderAssignments() {
             new Date(a.dueDate) - new Date(b.dueDate)
         );
         
+        const allCompleted = weekAssignments.every(assignment => assignment.status === 'completed');
+        
         const weekSection = document.createElement('div');
-        weekSection.className = 'week-section';
+        weekSection.className = allCompleted ? 'week-section week-completed' : 'week-section';
         
         weekSection.innerHTML = `
-            <div class="week-header">Week: ${getWeekDateRange(week)}</div>
+            <div class="week-header">
+                ${allCompleted ? '✓ ' : ''}Week: ${getWeekDateRange(week)}
+                ${allCompleted ? '<span class="completed-badge">All Done!</span>' : ''}
+            </div>
             <div class="week-content">
                 ${weekAssignments.map(assignment => createAssignmentCard(assignment)).join('')}
             </div>
@@ -356,11 +480,21 @@ function renderAssessments() {
     const container = document.getElementById('assessmentsContainer');
     if (!container) return;
     
-    if (assessments.length === 0) {
+    // Get filter value
+    const filterSelect = document.getElementById('classFilter');
+    const filterClassId = filterSelect ? filterSelect.value : '';
+    
+    // Filter assessments
+    let filteredAssessments = assessments;
+    if (filterClassId) {
+        filteredAssessments = assessments.filter(a => a.classId == filterClassId);
+    }
+    
+    if (filteredAssessments.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
                 <div class="empty-state-icon">📝</div>
-                <div class="empty-state-text">No assessments yet. Add your first assessment to get started!</div>
+                <div class="empty-state-text">${filterClassId ? 'No assessments for this class.' : 'No assessments yet. Add your first assessment to get started!'}</div>
             </div>
         `;
         return;
@@ -368,7 +502,7 @@ function renderAssessments() {
     
     // Group assessments by week
     const assessmentsByWeek = {};
-    assessments.forEach(assessment => {
+    filteredAssessments.forEach(assessment => {
         const week = getWeekNumber(assessment.date);
         if (!assessmentsByWeek[week]) {
             assessmentsByWeek[week] = [];
@@ -376,8 +510,30 @@ function renderAssessments() {
         assessmentsByWeek[week].push(assessment);
     });
     
-    // Sort weeks and assessments
-    const sortedWeeks = Object.keys(assessmentsByWeek).sort();
+    // Separate completed weeks from incomplete weeks
+    const incompleteWeeks = [];
+    const completedWeeks = [];
+    
+    Object.keys(assessmentsByWeek).forEach(week => {
+        const weekAssessments = assessmentsByWeek[week];
+        const allCompleted = weekAssessments.every(assessment => assessment.status === 'completed');
+        
+        if (allCompleted) {
+            completedWeeks.push(week);
+        } else {
+            incompleteWeeks.push(week);
+        }
+    });
+    
+    // Sort incomplete weeks chronologically (earliest first - current work on top)
+    incompleteWeeks.sort();
+    
+    // Sort completed weeks chronologically (oldest first - will be at bottom)
+    completedWeeks.sort();
+    
+    // Combine: incomplete weeks first, then completed weeks
+    const sortedWeeks = [...incompleteWeeks, ...completedWeeks];
+    
     container.innerHTML = '';
     
     sortedWeeks.forEach(week => {
@@ -385,11 +541,16 @@ function renderAssessments() {
             new Date(a.date) - new Date(b.date)
         );
         
+        const allCompleted = weekAssessments.every(assessment => assessment.status === 'completed');
+        
         const weekSection = document.createElement('div');
-        weekSection.className = 'week-section';
+        weekSection.className = allCompleted ? 'week-section week-completed' : 'week-section';
         
         weekSection.innerHTML = `
-            <div class="week-header">Week: ${getWeekDateRange(week)}</div>
+            <div class="week-header">
+                ${allCompleted ? '✓ ' : ''}Week: ${getWeekDateRange(week)}
+                ${allCompleted ? '<span class="completed-badge">All Done!</span>' : ''}
+            </div>
             <div class="week-content">
                 ${weekAssessments.map(assessment => createAssessmentCard(assessment)).join('')}
             </div>

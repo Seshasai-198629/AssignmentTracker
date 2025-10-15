@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grades - College Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1>Classes Tracker</h1>
+            <div class="nav-links">
+                <a href="assignments.html">Assignments</a>
+                <a href="assessments.html">Assessments</a>
+                <a href="classes.html">Classes</a>
+                <a href="future-classes.html">Future</a>
+                <a href="grades.html" class="active">Grades</a>
+                <button class="btn btn-logout" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header-section">
+            <h2>Grades & Performance</h2>
+            <button class="btn btn-primary" onclick="toggleModal('gradeModal')">+ Add Grade Entry</button>
+        </div>
+
+        <div class="info-box">
+            <strong>💡 How it works:</strong> Assignments and assessments are automatically added here with 0 points. 
+            Edit the points earned and total directly - grades calculate instantly! Ungraded tasks (0 points) won't affect your average.
+        </div>
+
+        <div id="gradesContainer">
+            <!-- Grades will be dynamically inserted here by class -->
+        </div>
+    </div>
+
+    <!-- Add Grade Modal -->
+    <div id="gradeModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="toggleModal('gradeModal')">&times;</span>
+            <h3>Add Grade Entry</h3>
+            <form id="gradeForm">
+                <div class="form-group">
+                    <label for="gradeClass">Class:</label>
+                    <select id="gradeClass" required>
+                        <option value="">Select a class</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="gradeTaskName">Task Name:</label>
+                    <input type="text" id="gradeTaskName" required placeholder="e.g., Midterm Exam">
+                </div>
+                <div class="form-group">
+                    <label for="gradeTaskType">Task Type:</label>
+                    <select id="gradeTaskType" required>
+                        <option value="Assignment">Assignment</option>
+                        <option value="Quiz">Quiz</option>
+                        <option value="Exam">Exam</option>
+                        <option value="Project">Project</option>
+                        <option value="Participation">Participation</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="gradeEarned">Points Earned:</label>
+                    <input type="number" id="gradeEarned" step="0.01" required placeholder="e.g., 85">
+                </div>
+                <div class="form-group">
+                    <label for="gradeTotal">Points Possible:</label>
+                    <input type="number" id="gradeTotal" step="0.01" required placeholder="e.g., 100">
+                </div>
+                <div class="form-group">
+                    <label for="gradeWeight">Weight (%):</label>
+                    <input type="number" id="gradeWeight" step="0.01" placeholder="e.g., 20 (leave empty if not weighted)">
+                </div>
+                <div class="form-group">
+                    <label for="gradeDate">Date:</label>
+                    <input type="date" id="gradeDate" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Grade</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    
+    <script src="firebase-config.js"></script>
+    <script src="auth.js"></script>
+    <script src="grades-script.js"></script>
+</body>
+</html>
