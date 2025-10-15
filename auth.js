@@ -9,12 +9,12 @@ function checkAuth() {
     const currentPage = window.location.pathname.split('/').pop();
     
     // Only check auth on protected pages (not login page)
-    if (currentPage !== 'login.html' && currentPage !== '') {
+    if (currentPage !== 'index.html' && currentPage !== '') {
         // Use Firebase auth state observer
         auth.onAuthStateChanged(user => {
             if (!user) {
                 // User not authenticated, redirect to login
-                window.location.href = 'login.html';
+                window.location.href = 'index.html';
             } else {
                 currentUser = user;
                 console.log('User authenticated:', user.email);
@@ -24,7 +24,7 @@ function checkAuth() {
 }
 
 // Initialize auth check on page load (for protected pages)
-if (window.location.pathname.split('/').pop() !== 'login.html') {
+if (window.location.pathname.split('/').pop() !== 'index.html') {
     checkAuth();
 }
 
@@ -33,7 +33,7 @@ function logout() {
     if (confirm('Are you sure you want to logout?')) {
         auth.signOut().then(() => {
             console.log('User signed out successfully');
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
         }).catch((error) => {
             console.error('Logout error:', error);
             alert('Error logging out. Please try again.');
@@ -42,13 +42,13 @@ function logout() {
 }
 
 // Login page specific code
-if (window.location.pathname.split('/').pop() === 'login.html') {
+if (window.location.pathname.split('/').pop() === 'index.html' || window.location.pathname.split('/').pop() === '') {
     document.addEventListener('DOMContentLoaded', function() {
         // Check if user is already logged in
         auth.onAuthStateChanged(user => {
             if (user) {
                 // User is already logged in, redirect to main page
-                window.location.href = 'index.html';
+                window.location.href = 'assignments.html';
             } else {
                 // Show login/signup forms
                 document.getElementById('setupSection').style.display = 'block';
@@ -116,7 +116,7 @@ function handleSignup(e) {
             
             // Redirect to main page
             setTimeout(() => {
-                window.location.href = 'index.html';
+                window.location.href = 'assignments.html';
             }, 1500);
         })
         .catch((error) => {
@@ -156,7 +156,7 @@ function handleLogin(e) {
             console.log('User logged in:', user.email);
             
             // Redirect to main page
-            window.location.href = 'index.html';
+            window.location.href = 'assignments.html';
         })
         .catch((error) => {
             console.error('Login error:', error);

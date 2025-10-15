@@ -41,7 +41,7 @@ function loadData() {
         const currentPage = window.location.pathname.split('/').pop();
         if (currentPage === 'assessments.html') {
             renderAssessments();
-        } else if (currentPage === 'index.html' || currentPage === '') {
+        } else if (currentPage === 'assignments.html' || currentPage === '') {
             renderAssignments();
         }
     });
@@ -54,7 +54,7 @@ function loadData() {
         });
         
         const currentPage = window.location.pathname.split('/').pop();
-        if (currentPage === 'index.html' || currentPage === '') {
+        if (currentPage === 'assignments.html' || currentPage === '') {
             renderAssignments();
         }
     });

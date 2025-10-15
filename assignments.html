@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assessment Tracker</title>
+    <title>Assignment Tracker</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -11,8 +11,8 @@
         <div class="nav-container">
             <h1>College Tracker</h1>
             <div class="nav-links">
-                <a href="assignments.html">Assignments</a>
-                <a href="assessments.html" class="active">Assessments</a>
+                <a href="assignments.html" class="active">Assignments</a>
+                <a href="assessments.html">Assessments</a>
                 <button class="btn btn-logout" onclick="logout()">Logout</button>
             </div>
         </div>
@@ -20,9 +20,9 @@
 
     <div class="container">
         <div class="header-section">
-            <h2>Assessments</h2>
+            <h2>Assignments</h2>
             <button class="btn btn-primary" onclick="toggleModal('classModal')">+ Add Class</button>
-            <button class="btn btn-primary" onclick="toggleModal('assessmentModal')">+ Add Assessment</button>
+            <button class="btn btn-primary" onclick="toggleModal('assignmentModal')">+ Add Assignment</button>
         </div>
 
         <div class="legend">
@@ -31,8 +31,8 @@
             <span class="legend-item"><span class="status-badge not-started"></span> Not Started</span>
         </div>
 
-        <div id="assessmentsContainer" class="assessments-container">
-            <!-- Assessments will be dynamically inserted here -->
+        <div id="assignmentsContainer" class="assignments-container">
+            <!-- Assignments will be dynamically inserted here -->
         </div>
     </div>
 
@@ -59,39 +59,47 @@
         </div>
     </div>
 
-    <!-- Add Assessment Modal -->
-    <div id="assessmentModal" class="modal">
+    <!-- Add Assignment Modal -->
+    <div id="assignmentModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="toggleModal('assessmentModal')">&times;</span>
-            <h3>Add New Assessment</h3>
-            <form id="assessmentForm">
+            <span class="close" onclick="toggleModal('assignmentModal')">&times;</span>
+            <h3>Add New Assignment</h3>
+            <form id="assignmentForm">
                 <div class="form-group">
-                    <label for="assessmentClass">Class:</label>
-                    <select id="assessmentClass" required>
+                    <label for="assignmentClass">Class:</label>
+                    <select id="assignmentClass" required>
                         <option value="">Select a class</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="assessmentName">Assessment Name:</label>
-                    <input type="text" id="assessmentName" required>
+                    <label for="assignmentName">Assignment Name:</label>
+                    <input type="text" id="assignmentName" required>
                 </div>
                 <div class="form-group">
-                    <label for="assessmentDate">Date:</label>
-                    <input type="date" id="assessmentDate" required>
+                    <label for="assignmentType">Type:</label>
+                    <select id="assignmentType" required>
+                        <option value="">Select type</option>
+                        <option value="Homework">Homework</option>
+                        <option value="Project">Project</option>
+                        <option value="Essay">Essay</option>
+                        <option value="Lab">Lab</option>
+                        <option value="Reading">Reading</option>
+                        <option value="Other">Other</option>
+                    </select>
                 </div>
                 <div class="form-group">
-                    <label for="assessmentTopics">Topics Covered:</label>
-                    <textarea id="assessmentTopics" rows="4" placeholder="Enter topics covered in this assessment" required></textarea>
+                    <label for="assignmentDue">Due Date:</label>
+                    <input type="date" id="assignmentDue" required>
                 </div>
                 <div class="form-group">
-                    <label for="assessmentStatus">Status:</label>
-                    <select id="assessmentStatus" required>
+                    <label for="assignmentStatus">Status:</label>
+                    <select id="assignmentStatus" required>
                         <option value="not-started">Not Started</option>
                         <option value="in-progress">In Progress</option>
                         <option value="completed">Completed</option>
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary">Add Assessment</button>
+                <button type="submit" class="btn btn-primary">Add Assignment</button>
             </form>
         </div>
     </div>

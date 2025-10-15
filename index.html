@@ -3,104 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assignment Tracker</title>
+    <title>Login - College Tracker</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .login-box {
+            background: white;
+            padding: 3rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-header h1 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+        }
+
+        .login-header p {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .login-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        #loginForm .form-group,
+        #setupForm .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .error-message {
+            background-color: #fee;
+            color: #c33;
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .success-message {
+            background-color: #efe;
+            color: #3c3;
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .password-requirements {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin-top: 0.5rem;
+            line-height: 1.6;
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        .setup-info {
+            background-color: #e8f4fd;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-container">
-            <h1>College Tracker</h1>
-            <div class="nav-links">
-                <a href="index.html" class="active">Assignments</a>
-                <a href="assessments.html">Assessments</a>
-                <button class="btn btn-logout" onclick="logout()">Logout</button>
+    <div class="login-container">
+        <div class="login-box">
+            <!-- First Time Setup Form -->
+            <div id="setupSection" style="display: none;">
+                <div class="login-header">
+                    <div class="login-icon">🔐</div>
+                    <h1>Create Account</h1>
+                    <p>Sign up to start tracking your assignments</p>
+                </div>
+
+                <div id="setupError" class="error-message"></div>
+                <div id="setupSuccess" class="success-message"></div>
+
+                <form id="setupForm">
+                    <div class="form-group">
+                        <label for="setupEmail">Email Address:</label>
+                        <input type="email" id="setupEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="setupPassword">Create Password:</label>
+                        <input type="password" id="setupPassword" required minlength="6">
+                        <div class="password-requirements">
+                            Password must be at least 6 characters long
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="setupPasswordConfirm">Confirm Password:</label>
+                        <input type="password" id="setupPasswordConfirm" required minlength="6">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">Create Account</button>
+                    <p style="text-align: center; margin-top: 1rem;">
+                        Already have an account? <a href="#" class="toggle-form" onclick="toggleForms(); return false;">Login here</a>
+                    </p>
+                </form>
             </div>
-        </div>
-    </nav>
 
-    <div class="container">
-        <div class="header-section">
-            <h2>Assignments</h2>
-            <button class="btn btn-primary" onclick="toggleModal('classModal')">+ Add Class</button>
-            <button class="btn btn-primary" onclick="toggleModal('assignmentModal')">+ Add Assignment</button>
-        </div>
+            <!-- Login Form -->
+            <div id="loginSection" style="display: none;">
+                <div class="login-header">
+                    <div class="login-icon">📚</div>
+                    <h1>College Tracker</h1>
+                    <p>Login to access your assignments</p>
+                </div>
 
-        <div class="legend">
-            <span class="legend-item"><span class="status-badge completed"></span> Completed</span>
-            <span class="legend-item"><span class="status-badge in-progress"></span> In Progress</span>
-            <span class="legend-item"><span class="status-badge not-started"></span> Not Started</span>
-        </div>
+                <div id="loginError" class="error-message"></div>
 
-        <div id="assignmentsContainer" class="assignments-container">
-            <!-- Assignments will be dynamically inserted here -->
-        </div>
-    </div>
-
-    <!-- Add Class Modal -->
-    <div id="classModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="toggleModal('classModal')">&times;</span>
-            <h3>Add New Class</h3>
-            <form id="classForm">
-                <div class="form-group">
-                    <label for="className">Class Name:</label>
-                    <input type="text" id="className" required>
-                </div>
-                <div class="form-group">
-                    <label for="classStart">Start Date:</label>
-                    <input type="date" id="classStart" required>
-                </div>
-                <div class="form-group">
-                    <label for="classEnd">End Date:</label>
-                    <input type="date" id="classEnd" required>
-                </div>
-                <button type="submit" class="btn btn-primary">Add Class</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Add Assignment Modal -->
-    <div id="assignmentModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="toggleModal('assignmentModal')">&times;</span>
-            <h3>Add New Assignment</h3>
-            <form id="assignmentForm">
-                <div class="form-group">
-                    <label for="assignmentClass">Class:</label>
-                    <select id="assignmentClass" required>
-                        <option value="">Select a class</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="assignmentName">Assignment Name:</label>
-                    <input type="text" id="assignmentName" required>
-                </div>
-                <div class="form-group">
-                    <label for="assignmentType">Type:</label>
-                    <select id="assignmentType" required>
-                        <option value="">Select type</option>
-                        <option value="Homework">Homework</option>
-                        <option value="Project">Project</option>
-                        <option value="Essay">Essay</option>
-                        <option value="Lab">Lab</option>
-                        <option value="Reading">Reading</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="assignmentDue">Due Date:</label>
-                    <input type="date" id="assignmentDue" required>
-                </div>
-                <div class="form-group">
-                    <label for="assignmentStatus">Status:</label>
-                    <select id="assignmentStatus" required>
-                        <option value="not-started">Not Started</option>
-                        <option value="in-progress">In Progress</option>
-                        <option value="completed">Completed</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary">Add Assignment</button>
-            </form>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="loginEmail">Email Address:</label>
+                        <input type="email" id="loginEmail" required autofocus>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Password:</label>
+                        <input type="password" id="loginPassword" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">Login</button>
+                    <p style="text-align: center; margin-top: 1rem;">
+                        Don't have an account? <a href="#" class="toggle-form" onclick="toggleForms(); return false;">Sign up here</a>
+                    </p>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -111,6 +161,5 @@
     
     <script src="firebase-config.js"></script>
     <script src="auth.js"></script>
-    <script src="script.js"></script>
 </body>
 </html>
