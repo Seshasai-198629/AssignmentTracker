@@ -719,7 +719,7 @@ function editAssignment(id) {
     document.getElementById('assignmentName').value = assignment.name;
     document.getElementById('assignmentClass').value = assignment.classId;
     document.getElementById('assignmentType').value = assignment.type;
-    document.getElementById('assignmentDueDate').value = assignment.dueDate;
+    document.getElementById('assignmentDue').value = assignment.dueDate;
     document.getElementById('assignmentStatus').value = assignment.status;
     
     // Change form submit behavior to update instead of create
