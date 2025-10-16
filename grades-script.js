@@ -165,12 +165,15 @@ function renderGrades() {
         const average = calculateClassAverage(classGrades);
         const ungradedCount = classGrades.filter(g => g.pointsTotal === 0).length;
         
+        const classSectionId = `grade-class-${classId}`;
+        
         const classSection = document.createElement('div');
         classSection.className = 'grade-class-section';
         
         classSection.innerHTML = `
-            <div class="grade-class-header">
+            <div class="grade-class-header" onclick="toggleGradeSection('${classSectionId}')">
                 <div>
+                    <span class="collapse-icon" id="${classSectionId}-icon">▼</span>
                     <div class="grade-class-title">${className}</div>
                     ${ungradedCount > 0 ? `
                         <div style="font-size: 0.9rem; color: #f39c12; margin-top: 0.25rem;">
@@ -182,14 +185,28 @@ function renderGrades() {
                     ${average.toFixed(1)}%
                 </div>
             </div>
-            <div class="grade-items">
-                ${classGrades.sort((a, b) => new Date(b.date) - new Date(a.date))
+            <div class="grade-items" id="${classSectionId}">
+                ${classGrades.sort((a, b) => new Date(a.date) - new Date(b.date))
                     .map(grade => createGradeItem(grade)).join('')}
             </div>
         `;
         
         container.appendChild(classSection);
     });
+}
+
+// Toggle grade section visibility
+function toggleGradeSection(sectionId) {
+    const content = document.getElementById(sectionId);
+    const icon = document.getElementById(`${sectionId}-icon`);
+    
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        icon.textContent = '▼';
+    } else {
+        content.style.display = 'none';
+        icon.textContent = '▶';
+    }
 }
 
 // Calculate class average

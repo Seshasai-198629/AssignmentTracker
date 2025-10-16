@@ -2,6 +2,7 @@
 let classes = [];
 let assignments = [];
 let assessments = [];
+let grades = [];
 let userDataRef = null;
 
 // Initialize on page load
@@ -75,6 +76,14 @@ function loadData() {
             renderAssessments();
         }
     });
+    
+    // Load grades
+    userDataRef.child('grades').on('value', (snapshot) => {
+        grades = [];
+        snapshot.forEach((childSnapshot) => {
+            grades.push(childSnapshot.val());
+        });
+    });
 }
 
 function saveClass(classData) {
@@ -110,6 +119,11 @@ function deleteAssignmentFromDB(assignmentId) {
 function deleteAssessmentFromDB(assessmentId) {
     if (!userDataRef) return;
     return userDataRef.child('assessments').child(assessmentId.toString()).remove();
+}
+
+function deleteGradeFromDB(gradeId) {
+    if (!userDataRef) return;
+    return userDataRef.child('grades').child(gradeId.toString()).remove();
 }
 
 // Modal Functions
@@ -186,86 +200,157 @@ function handleClassSubmit(e) {
 function handleAssignmentSubmit(e) {
     e.preventDefault();
     
-    const newAssignment = {
-        id: Date.now(),
-        classId: document.getElementById('assignmentClass').value,
-        name: document.getElementById('assignmentName').value,
-        type: document.getElementById('assignmentType').value,
-        dueDate: document.getElementById('assignmentDue').value,
-        status: document.getElementById('assignmentStatus').value
-    };
+    const form = e.target;
+    const editId = form.dataset.editId;
     
-    saveAssignment(newAssignment).then(() => {
-        console.log('Assignment saved successfully');
+    if (editId) {
+        // Update existing assignment
+        const assignment = assignments.find(a => a.id == editId);
+        assignment.classId = document.getElementById('assignmentClass').value;
+        assignment.name = document.getElementById('assignmentName').value;
+        assignment.type = document.getElementById('assignmentType').value;
+        assignment.dueDate = document.getElementById('assignmentDue').value;
+        assignment.status = document.getElementById('assignmentStatus').value;
         
-        // Automatically create a grade entry for this assignment
-        const newGrade = {
-            id: Date.now() + 1, // Slightly different ID
-            classId: newAssignment.classId,
-            taskName: newAssignment.name,
-            taskType: newAssignment.type,
-            pointsEarned: 0,
-            pointsTotal: 0,
-            weight: null,
-            date: newAssignment.dueDate,
-            linkedAssignmentId: newAssignment.id
+        saveAssignment(assignment).then(() => {
+            console.log('Assignment updated successfully');
+            
+            // Update the linked grade entry
+            const linkedGrade = grades.find(g => g.linkedAssignmentId == editId);
+            if (linkedGrade) {
+                linkedGrade.classId = assignment.classId;
+                linkedGrade.taskName = assignment.name;
+                linkedGrade.taskType = assignment.type;
+                linkedGrade.date = assignment.dueDate;
+                saveGrade(linkedGrade);
+            }
+            
+            form.reset();
+            delete form.dataset.editId;
+            document.querySelector('#assignmentModal h3').textContent = 'Add New Assignment';
+            toggleModal('assignmentModal');
+        }).catch((error) => {
+            console.error('Error updating assignment:', error);
+            alert('Error updating assignment. Please try again.');
+        });
+    } else {
+        // Create new assignment
+        const newAssignment = {
+            id: Date.now(),
+            classId: document.getElementById('assignmentClass').value,
+            name: document.getElementById('assignmentName').value,
+            type: document.getElementById('assignmentType').value,
+            dueDate: document.getElementById('assignmentDue').value,
+            status: document.getElementById('assignmentStatus').value
         };
         
-        saveGrade(newGrade).then(() => {
-            console.log('Grade entry created automatically');
+        saveAssignment(newAssignment).then(() => {
+            console.log('Assignment saved successfully');
+            
+            // Automatically create a grade entry for this assignment
+            const newGrade = {
+                id: Date.now() + 1, // Slightly different ID
+                classId: newAssignment.classId,
+                taskName: newAssignment.name,
+                taskType: newAssignment.type,
+                pointsEarned: 0,
+                pointsTotal: 0,
+                weight: null,
+                date: newAssignment.dueDate,
+                linkedAssignmentId: newAssignment.id
+            };
+            
+            saveGrade(newGrade).then(() => {
+                console.log('Grade entry created automatically');
+            }).catch((error) => {
+                console.error('Error creating grade entry:', error);
+            });
+            
+            e.target.reset();
+            toggleModal('assignmentModal');
         }).catch((error) => {
-            console.error('Error creating grade entry:', error);
+            console.error('Error saving assignment. Please try again.');
+            alert('Error adding assignment. Please try again.');
         });
-        
-        e.target.reset();
-        toggleModal('assignmentModal');
-    }).catch((error) => {
-        console.error('Error saving assignment:', error);
-        alert('Error adding assignment. Please try again.');
-    });
+    }
 }
 
 // Handle Assessment Form Submission
 function handleAssessmentSubmit(e) {
     e.preventDefault();
     
-    const newAssessment = {
-        id: Date.now(),
-        classId: document.getElementById('assessmentClass').value,
-        name: document.getElementById('assessmentName').value,
-        date: document.getElementById('assessmentDate').value,
-        topics: document.getElementById('assessmentTopics').value,
-        status: document.getElementById('assessmentStatus').value
-    };
+    const form = e.target;
+    const editId = form.dataset.editId;
     
-    saveAssessment(newAssessment).then(() => {
-        console.log('Assessment saved successfully');
+    if (editId) {
+        // Update existing assessment
+        const assessment = assessments.find(a => a.id == editId);
+        assessment.classId = document.getElementById('assessmentClass').value;
+        assessment.name = document.getElementById('assessmentName').value;
+        assessment.date = document.getElementById('assessmentDate').value;
+        assessment.topics = document.getElementById('assessmentTopics').value;
+        assessment.status = document.getElementById('assessmentStatus').value;
         
-        // Automatically create a grade entry for this assessment
-        const newGrade = {
-            id: Date.now() + 1, // Slightly different ID
-            classId: newAssessment.classId,
-            taskName: newAssessment.name,
-            taskType: 'Exam', // Assessments are typically exams
-            pointsEarned: 0,
-            pointsTotal: 0,
-            weight: null,
-            date: newAssessment.date,
-            linkedAssessmentId: newAssessment.id
+        saveAssessment(assessment).then(() => {
+            console.log('Assessment updated successfully');
+            
+            // Update the linked grade entry
+            const linkedGrade = grades.find(g => g.linkedAssessmentId == editId);
+            if (linkedGrade) {
+                linkedGrade.classId = assessment.classId;
+                linkedGrade.taskName = assessment.name;
+                linkedGrade.date = assessment.date;
+                saveGrade(linkedGrade);
+            }
+            
+            form.reset();
+            delete form.dataset.editId;
+            document.querySelector('#assessmentModal h3').textContent = 'Add New Assessment';
+            toggleModal('assessmentModal');
+        }).catch((error) => {
+            console.error('Error updating assessment:', error);
+            alert('Error updating assessment. Please try again.');
+        });
+    } else {
+        // Create new assessment
+        const newAssessment = {
+            id: Date.now(),
+            classId: document.getElementById('assessmentClass').value,
+            name: document.getElementById('assessmentName').value,
+            date: document.getElementById('assessmentDate').value,
+            topics: document.getElementById('assessmentTopics').value,
+            status: document.getElementById('assessmentStatus').value
         };
         
-        saveGrade(newGrade).then(() => {
-            console.log('Grade entry created automatically');
+        saveAssessment(newAssessment).then(() => {
+            console.log('Assessment saved successfully');
+            
+            // Automatically create a grade entry for this assessment
+            const newGrade = {
+                id: Date.now() + 1, // Slightly different ID
+                classId: newAssessment.classId,
+                taskName: newAssessment.name,
+                taskType: 'Exam', // Assessments are typically exams
+                pointsEarned: 0,
+                pointsTotal: 0,
+                weight: null,
+                date: newAssessment.date,
+                linkedAssessmentId: newAssessment.id
+            };
+            
+            saveGrade(newGrade).then(() => {
+                console.log('Grade entry created automatically');
+            }).catch((error) => {
+                console.error('Error creating grade entry:', error);
+            });
+            
+            e.target.reset();
+            toggleModal('assessmentModal');
         }).catch((error) => {
-            console.error('Error creating grade entry:', error);
+            console.error('Error saving assessment:', error);
+            alert('Error adding assessment. Please try again.');
         });
-        
-        e.target.reset();
-        toggleModal('assessmentModal');
-    }).catch((error) => {
-        console.error('Error saving assessment:', error);
-        alert('Error adding assessment. Please try again.');
-    });
+    }
 }
 
 // Populate Class Dropdowns
@@ -419,18 +504,35 @@ function renderAssignments() {
         const weekSection = document.createElement('div');
         weekSection.className = allCompleted ? 'week-section week-completed' : 'week-section';
         
+        const weekId = `week-${week.replace(/\W/g, '-')}`;
+        
         weekSection.innerHTML = `
-            <div class="week-header">
+            <div class="week-header" onclick="toggleWeekSection('${weekId}')">
+                <span class="collapse-icon" id="${weekId}-icon">▼</span>
                 ${allCompleted ? '✓ ' : ''}Week: ${getWeekDateRange(week)}
                 ${allCompleted ? '<span class="completed-badge">All Done!</span>' : ''}
             </div>
-            <div class="week-content">
+            <div class="week-content" id="${weekId}">
                 ${weekAssignments.map(assignment => createAssignmentCard(assignment)).join('')}
             </div>
         `;
         
         container.appendChild(weekSection);
     });
+}
+
+// Toggle week section visibility
+function toggleWeekSection(weekId) {
+    const content = document.getElementById(weekId);
+    const icon = document.getElementById(`${weekId}-icon`);
+    
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        icon.textContent = '▼';
+    } else {
+        content.style.display = 'none';
+        icon.textContent = '▶';
+    }
 }
 
 // Create Assignment Card
@@ -450,6 +552,7 @@ function createAssignmentCard(assignment) {
             <div class="card-header">
                 <div class="card-title">${assignment.name}</div>
                 <div class="card-actions">
+                    <button class="btn btn-edit" onclick="editAssignment(${assignment.id})">Edit</button>
                     <button class="btn btn-delete" onclick="deleteAssignment(${assignment.id})">Delete</button>
                 </div>
             </div>
@@ -546,12 +649,15 @@ function renderAssessments() {
         const weekSection = document.createElement('div');
         weekSection.className = allCompleted ? 'week-section week-completed' : 'week-section';
         
+        const weekId = `week-assess-${week.replace(/\W/g, '-')}`;
+        
         weekSection.innerHTML = `
-            <div class="week-header">
+            <div class="week-header" onclick="toggleWeekSection('${weekId}')">
+                <span class="collapse-icon" id="${weekId}-icon">▼</span>
                 ${allCompleted ? '✓ ' : ''}Week: ${getWeekDateRange(week)}
                 ${allCompleted ? '<span class="completed-badge">All Done!</span>' : ''}
             </div>
-            <div class="week-content">
+            <div class="week-content" id="${weekId}">
                 ${weekAssessments.map(assessment => createAssessmentCard(assessment)).join('')}
             </div>
         `;
@@ -577,6 +683,7 @@ function createAssessmentCard(assessment) {
             <div class="card-header">
                 <div class="card-title">${assessment.name}</div>
                 <div class="card-actions">
+                    <button class="btn btn-edit" onclick="editAssessment(${assessment.id})">Edit</button>
                     <button class="btn btn-delete" onclick="deleteAssessment(${assessment.id})">Delete</button>
                 </div>
             </div>
@@ -603,8 +710,67 @@ function createAssessmentCard(assessment) {
 }
 
 // Delete Functions
+// Edit Assignment
+function editAssignment(id) {
+    const assignment = assignments.find(a => a.id === id);
+    if (!assignment) return;
+    
+    // Pre-fill the form
+    document.getElementById('assignmentName').value = assignment.name;
+    document.getElementById('assignmentClass').value = assignment.classId;
+    document.getElementById('assignmentType').value = assignment.type;
+    document.getElementById('assignmentDueDate').value = assignment.dueDate;
+    document.getElementById('assignmentStatus').value = assignment.status;
+    
+    // Change form submit behavior to update instead of create
+    const form = document.getElementById('assignmentForm');
+    form.dataset.editId = id;
+    
+    // Change modal title
+    const modal = document.getElementById('assignmentModal');
+    const title = modal.querySelector('h3');
+    title.textContent = 'Edit Assignment';
+    
+    // Show modal
+    toggleModal('assignmentModal');
+}
+
+// Edit Assessment
+function editAssessment(id) {
+    const assessment = assessments.find(a => a.id === id);
+    if (!assessment) return;
+    
+    // Pre-fill the form
+    document.getElementById('assessmentName').value = assessment.name;
+    document.getElementById('assessmentClass').value = assessment.classId;
+    document.getElementById('assessmentDate').value = assessment.date;
+    document.getElementById('assessmentTopics').value = assessment.topics;
+    document.getElementById('assessmentStatus').value = assessment.status;
+    
+    // Change form submit behavior to update instead of create
+    const form = document.getElementById('assessmentForm');
+    form.dataset.editId = id;
+    
+    // Change modal title
+    const modal = document.getElementById('assessmentModal');
+    const title = modal.querySelector('h3');
+    title.textContent = 'Edit Assessment';
+    
+    // Show modal
+    toggleModal('assessmentModal');
+}
+
+// Delete Functions
 function deleteAssignment(id) {
     if (confirm('Are you sure you want to delete this assignment?')) {
+        // Also delete the linked grade entry
+        const linkedGrade = grades.find(g => g.linkedAssignmentId === id);
+        if (linkedGrade) {
+            deleteGradeFromDB(linkedGrade.id).then(() => {
+                console.log('Linked grade deleted');
+            });
+        }
+        
         deleteAssignmentFromDB(id).then(() => {
             console.log('Assignment deleted successfully');
         }).catch((error) => {
@@ -616,6 +782,14 @@ function deleteAssignment(id) {
 
 function deleteAssessment(id) {
     if (confirm('Are you sure you want to delete this assessment?')) {
+        // Also delete the linked grade entry
+        const linkedGrade = grades.find(g => g.linkedAssessmentId === id);
+        if (linkedGrade) {
+            deleteGradeFromDB(linkedGrade.id).then(() => {
+                console.log('Linked grade deleted');
+            });
+        }
+        
         deleteAssessmentFromDB(id).then(() => {
             console.log('Assessment deleted successfully');
         }).catch((error) => {
