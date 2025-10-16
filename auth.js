@@ -9,6 +9,7 @@ function checkAuth() {
     const currentPage = window.location.pathname.split('/').pop();
     
     // Only check auth on protected pages (not login page)
+    // Allow empty string or index.html as login page
     if (currentPage !== 'index.html' && currentPage !== '') {
         // Use Firebase auth state observer
         auth.onAuthStateChanged(user => {
@@ -24,7 +25,9 @@ function checkAuth() {
 }
 
 // Initialize auth check on page load (for protected pages)
-if (window.location.pathname.split('/').pop() !== 'index.html') {
+const currentPath = window.location.pathname;
+const isLoginPage = currentPath.endsWith('index.html') || currentPath === '/' || currentPath.endsWith('/');
+if (!isLoginPage) {
     checkAuth();
 }
 
@@ -42,7 +45,10 @@ function logout() {
 }
 
 // Login page specific code
-if (window.location.pathname.split('/').pop() === 'index.html' || window.location.pathname.split('/').pop() === '') {
+const loginPagePath = window.location.pathname;
+const isOnLoginPage = loginPagePath.endsWith('index.html') || loginPagePath === '/' || loginPagePath.endsWith('/');
+
+if (isOnLoginPage) {
     document.addEventListener('DOMContentLoaded', function() {
         // Check if user is already logged in
         auth.onAuthStateChanged(user => {
